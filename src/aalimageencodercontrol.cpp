@@ -21,6 +21,7 @@
 #include "aalimagecapturecontrol.h"
 #include "aalcameraservice.h"
 
+#include <hybris/properties/properties.h>
 #include <hybris/camera/camera_compatibility_layer_capabilities.h>
 
 #include <unistd.h>
@@ -68,6 +69,7 @@ void AalImageEncoderControl::setImageSettings(const QImageEncoderSettings &setti
 
         // resolution
         if (!settings.resolution().isNull()) {
+            qWarning() << "(AalImageEncoderControl::setImageSettings) settings.resolution() not empty, using it...";
             setSize(settings.resolution());
         }
 
@@ -104,8 +106,20 @@ float AalImageEncoderControl::getAspectRatio() const
     return (float)m_currentSize.width() / (float)m_currentSize.height();
 }
 
+QSize AalImageEncoderControl::getPictureSizeOverride()
+{
+    QByteArray propertyName = QString("aal.camera.default.resolution").toLocal8Bit();
+
+    char resolutionStr[PROP_VALUE_MAX];
+    property_get(propertyName.data(), resolutionStr, "");
+
+    QStringList resolutionPieces = QString(resolutionStr).split("x");
+    return QSize(resolutionPieces.value(0).toInt(), resolutionPieces.value(1).toInt());
+}
+
 void AalImageEncoderControl::init(CameraControl *control)
 {
+    qWarning() << "(AalImageEncoderControl::init)";
     Q_ASSERT(control != NULL);
 
     if (m_availableSizes.isEmpty()) {
@@ -123,14 +137,21 @@ void AalImageEncoderControl::init(CameraControl *control)
     }
 
     if (!m_currentSize.isValid() || !m_availableSizes.contains(m_currentSize)) {
-        QSize greatestSize;
-        foreach (const QSize &size, m_availableSizes) {
-            if (size.width() * size.height() > greatestSize.width() * greatestSize.height()) {
-                greatestSize = size;
-            }
-        }
+        QSize defaultSize = getPictureSizeOverride();
+        qWarning() << "(AalImageEncoderControl::getPictureSizeOverride) Parsed value for defaultSize:" << defaultSize;
 
-        setSize(greatestSize);
+        if (defaultSize.isEmpty()) {
+            QSize greatestSize;
+            foreach (const QSize &size, m_availableSizes) {
+                if (size.width() * size.height() > greatestSize.width() * greatestSize.height()) {
+                    greatestSize = size;
+                }
+            }
+
+            setSize(greatestSize);
+        } else {
+            setSize(defaultSize);
+        }
     } else {
         setSize(m_currentSize);
     }
@@ -138,6 +159,7 @@ void AalImageEncoderControl::init(CameraControl *control)
 
 bool AalImageEncoderControl::setSize(const QSize &size)
 {
+    qWarning() << "(AalImageEncoderControl::setSize)" << size;
     CameraControl *cc = m_service->androidControl();
     if (!cc) {
         m_currentSize = size;

@@ -55,6 +55,7 @@ private:
     QSize m_currentThumbnailSize;
     QImageEncoderSettings m_encoderSettings;
 
+    QSize getPictureSizeOverride();
     bool setSize(const QSize &size);
     void getPictureSize(int width, int height);
     void getThumbnailSize(int width, int height);
