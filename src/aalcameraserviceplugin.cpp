@@ -103,6 +103,7 @@ int AalServicePlugin::getCameraOrientationOverride(const QString deviceID) const
 
 int AalServicePlugin::cameraOrientation(const QByteArray & device) const
 {
+    qWarning() << "(AalServicePlugin::cameraOrientation) enter";
     // Check for the override
     int override = getCameraOrientationOverride(device);
     if (override != -1) {
@@ -128,7 +129,9 @@ int AalServicePlugin::cameraOrientation(const QByteArray & device) const
     // rotated", but on QT, it means "the physical orientation of the camera
     // sensor". So, the value will have to be inverted.
 
-    return (360 - orientation) % 360;
+    int retVal = (360 - orientation) % 360;
+    qWarning() << "(AalServicePlugin::cameraOrientation) about to return" << retVal;
+    return retVal;
 }
 
 QCamera::Position AalServicePlugin::cameraPosition(const QByteArray & device) const

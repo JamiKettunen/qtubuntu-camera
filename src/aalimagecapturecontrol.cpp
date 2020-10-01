@@ -82,6 +82,7 @@ int AalImageCaptureControl::capture(const QString &fileName)
 
     RotationHandler *rotationHandler = m_service->rotationHandler();
     int rotation = rotationHandler->calculateRotation();
+    qWarning() << "(AalImageCaptureControl::capture) setting rotation of" << rotation;
     android_camera_set_rotation(m_service->androidControl(), rotation);
 
     android_camera_take_snapshot(m_service->androidControl());

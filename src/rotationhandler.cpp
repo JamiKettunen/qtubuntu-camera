@@ -35,7 +35,9 @@ RotationHandler::RotationHandler(AalCameraService *service, QObject *parent):
 
 void RotationHandler::orientationChanged()
 {
-    switch (m_orientationSensor.reading()->orientation()) {
+    QOrientationReading::Orientation orientationReading = m_orientationSensor.reading()->orientation();
+    qWarning() << "(RotationHandler::orientationChanged) orientationReading =" << orientationReading;
+    switch (orientationReading) {
         case QOrientationReading::Orientation::TopUp:
             m_deviceOrientation = 0;
             break;
@@ -60,6 +62,7 @@ void RotationHandler::orientationChanged()
 
 void RotationHandler::cameraStateChanged(QCamera::State state)
 {
+    qWarning() << "(RotationHandler::cameraStateChanged) state =" << state;
     // Listen to orientation change only if we're active.
     if (state == QCamera::ActiveState) {
         m_orientationSensor.start();
@@ -86,6 +89,7 @@ int RotationHandler::calculateRotation()
 
     // Ensure rotation is positive
     rotation = (rotation + 360) % 360;
+    qWarning() << "(RotationHandler::calculateRotation) returning rotation of" << rotation;
 
     return rotation;
 }
